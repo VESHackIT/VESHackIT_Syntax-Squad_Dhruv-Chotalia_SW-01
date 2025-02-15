@@ -120,13 +120,15 @@ export default function Game() {
   }, []);
 
   const createBubbles = (word) => {
+    // Reduced speed multiplier for slower movement
+    const speedMultiplier = 0.6;
     const wordBubbles = word.split("").map((letter) => ({
       letter,
       isDecoy: false,
       x: Math.random() * (dimensions.width - 64),
       y: Math.random() * (dimensions.height - 64),
-      speedX: (Math.random() - 0.5) * 3,
-      speedY: (Math.random() - 0.5) * 3,
+      speedX: (Math.random() - 0.5) * speedMultiplier,
+      speedY: (Math.random() - 0.5) * speedMultiplier,
       offsetX: 0,
       offsetY: 0,
     }));
@@ -136,8 +138,8 @@ export default function Game() {
       isDecoy: true,
       x: Math.random() * (dimensions.width - 64),
       y: Math.random() * (dimensions.height - 64),
-      speedX: (Math.random() - 0.5) * 3,
-      speedY: (Math.random() - 0.5) * 3,
+      speedX: (Math.random() - 0.5) * speedMultiplier,
+      speedY: (Math.random() - 0.5) * speedMultiplier,
       offsetX: 0,
       offsetY: 0,
     }));
@@ -158,21 +160,20 @@ export default function Game() {
   };
 
   const handleBubbleClick = (bubble, index) => {
-    if (
-      bubble.letter.toLowerCase() ===
-      gameState.targetWord[gameState.currentIndex].toLowerCase()
-    ) {
+    const correctLetter = gameState.targetWord[gameState.currentIndex];
+  
+    if (bubble.letter.toLowerCase() === correctLetter.toLowerCase()) {
       setGameState((prev) => {
         const newBubbles = [...prev.bubbles];
         newBubbles.splice(index, 1);
-
+  
         const newState = {
           ...prev,
           bubbles: newBubbles,
           currentIndex: prev.currentIndex + 1,
           score: prev.score + 10,
         };
-
+  
         if (newState.currentIndex === prev.targetWord.length) {
           setTimeout(startGame, 2000);
           return {
@@ -180,21 +181,48 @@ export default function Game() {
             message: "✨ Perfect! Get ready for the next word! ✨",
           };
         }
-
+  
         return newState;
       });
     } else {
+      // Define mistake details with incorrect-correct letter mapping
+      const mistakeData = {
+        userId: "12345", // Replace with actual user ID if available
+        gameType: "Letter Popup", // Modify based on actual game type
+        mistake: {
+          incorrect: bubble.letter,
+          correct: correctLetter,
+        },
+        word: gameState.targetWord,
+      };
+  
+      // Send mistake to the backend
+      fetch("http://localhost:3000/api/mistake", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(mistakeData),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log("Mistake recorded:", data))
+        .catch((error) => console.error("Error reporting mistake:", error));
+  
+      // Update game state with penalty
       setGameState((prev) => ({
         ...prev,
         score: Math.max(0, prev.score - 5),
         message: "Oops! Wrong letter!",
       }));
+  
       setTimeout(
         () => setGameState((prev) => ({ ...prev, message: "" })),
-        1000,
+        1000
       );
     }
   };
+  
+  
 
   useEffect(() => {
     startGame();
@@ -219,7 +247,7 @@ export default function Game() {
                      backdrop-blur-sm cursor-pointer transition-all duration-300
                      hover:bg-white/30 hover:-translate-y-1"
         >
-          Start Game
+          Next
         </button>
       </div>
 

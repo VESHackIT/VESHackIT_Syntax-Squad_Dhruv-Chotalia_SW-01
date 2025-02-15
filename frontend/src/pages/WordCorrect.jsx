@@ -65,25 +65,65 @@ const WordCorrectionGame = () => {
   const handleDrop = (targetIndex) => {
     if (!draggedLetter) return;
     const wordData = gameData[currentWordIndex];
+
     if (!wordData.incorrectPositions.includes(targetIndex)) {
       setMessage("This letter is already correct!");
       return;
     }
 
+    const correctLetter = wordData.correctWord[targetIndex];
+
+    // Report a mistake if the dragged letter is not the correct one
+    if (draggedLetter !== correctLetter) {
+      const mistakeData = {
+        userId: "12345", // Replace with actual user ID if available
+        gameType: "Word Correction",
+        mistake: {
+          incorrect: draggedLetter,
+          correct: correctLetter,
+        },
+        word: wordData.correctWord,
+      };
+
+      fetch("http://localhost:3000/api/mistake", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(mistakeData),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log("Mistake recorded:", data))
+        .catch((error) =>
+          console.error("Error reporting mistake:", error)
+        );
+    }
+
+    // Swap the letters instead of removing the dragged letter
     const newWord = [...currentWord];
+    const replacedLetter = newWord[targetIndex];
     newWord[targetIndex] = draggedLetter;
     setCurrentWord(newWord);
-    setAvailableLetters(
-      availableLetters.filter((letter) => letter !== draggedLetter),
-    );
+
+    // Update available letters by replacing the dragged letter with the letter that was in the tile
+    const newAvailableLetters = availableLetters.slice();
+    const draggedIndex = newAvailableLetters.indexOf(draggedLetter);
+    if (draggedIndex !== -1) {
+      newAvailableLetters.splice(draggedIndex, 1, replacedLetter);
+    } else {
+      newAvailableLetters.push(replacedLetter);
+    }
+    setAvailableLetters(newAvailableLetters);
+
     setDraggedLetter(null);
     setAttempts((prev) => prev + 1);
 
+    // Check if the new word matches the correct word
     if (newWord.join("") === wordData.correctWord) {
       const pointsEarned = Math.max(10 - attempts, 1);
       setScore((prev) => prev + pointsEarned);
       setMessage(
-        `Correct! You earned ${pointsEarned} points. Click Next to continue.`,
+        `Correct! You earned ${pointsEarned} points. Click Next to continue.`
       );
       setIsCorrect(true);
     }
@@ -122,7 +162,13 @@ const WordCorrectionGame = () => {
             return (
               <div
                 key={index}
-                className={`w-12 h-12 border-2 flex items-center justify-center text-2xl rounded-lg ${isCurrentCorrect ? "border-green-500 bg-green-50" : isInitiallyIncorrect ? "border-red-500 bg-red-50" : "border-gray-300"}`}
+                className={`w-12 h-12 border-2 flex items-center justify-center text-2xl rounded-lg ${
+                  isCurrentCorrect
+                    ? "border-green-500 bg-green-50"
+                    : isInitiallyIncorrect
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300"
+                }`}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => handleDrop(index)}
               >
@@ -147,7 +193,11 @@ const WordCorrectionGame = () => {
 
         {message && (
           <div
-            className={`text-xl font-bold ${message.includes("Correct") || message.includes("completed") ? "text-green-500" : "text-red-500"}`}
+            className={`text-xl font-bold ${
+              message.includes("Correct") || message.includes("completed")
+                ? "text-green-500"
+                : "text-red-500"
+            }`}
           >
             {message}
           </div>
@@ -155,7 +205,9 @@ const WordCorrectionGame = () => {
 
         <button
           onClick={handleNext}
-          className={`px-6 py-2 bg-blue-500 text-white rounded-lg ${!isCorrect && "opacity-50 cursor-not-allowed"}`}
+          className={`px-6 py-2 bg-blue-500 text-white rounded-lg ${
+            !isCorrect && "opacity-50 cursor-not-allowed"
+          }`}
           disabled={!isCorrect}
         >
           Next Word
