@@ -161,19 +161,19 @@ export default function Game() {
 
   const handleBubbleClick = (bubble, index) => {
     const correctLetter = gameState.targetWord[gameState.currentIndex];
-  
+
     if (bubble.letter.toLowerCase() === correctLetter.toLowerCase()) {
       setGameState((prev) => {
         const newBubbles = [...prev.bubbles];
         newBubbles.splice(index, 1);
-  
+
         const newState = {
           ...prev,
           bubbles: newBubbles,
           currentIndex: prev.currentIndex + 1,
           score: prev.score + 10,
         };
-  
+
         if (newState.currentIndex === prev.targetWord.length) {
           setTimeout(startGame, 2000);
           return {
@@ -181,7 +181,7 @@ export default function Game() {
             message: "✨ Perfect! Get ready for the next word! ✨",
           };
         }
-  
+
         return newState;
       });
     } else {
@@ -195,7 +195,7 @@ export default function Game() {
         },
         word: gameState.targetWord,
       };
-  
+
       // Send mistake to the backend
       fetch("http://localhost:3000/api/mistake", {
         method: "POST",
@@ -207,22 +207,20 @@ export default function Game() {
         .then((res) => res.json())
         .then((data) => console.log("Mistake recorded:", data))
         .catch((error) => console.error("Error reporting mistake:", error));
-  
+
       // Update game state with penalty
       setGameState((prev) => ({
         ...prev,
         score: Math.max(0, prev.score - 5),
         message: "Oops! Wrong letter!",
       }));
-  
+
       setTimeout(
         () => setGameState((prev) => ({ ...prev, message: "" })),
-        1000
+        1000,
       );
     }
   };
-  
-  
 
   useEffect(() => {
     startGame();
