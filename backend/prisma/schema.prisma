@@ -1,0 +1,19 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql" // or your preferred provider (e.g., "mysql", "sqlite")
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Metric {
+  id           Int      @id @default(autoincrement())
+  targetWord   String
+  totalTime    Int
+  score        Int
+  createdAt    DateTime @default(now())
+} 
+
