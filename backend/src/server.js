@@ -1,0 +1,11 @@
+import express from "express";
+import cors from "cors";
+import router from "./router.js";
+import { createUser, signIn } from "./handlers/user.js";
+const app = express();
+app.use(express.json());
+app.use(cors());
+app.use("/api", protect, router);
+app.post("/user", createUser);
+app.post("/signin", signIn);
+export default app;

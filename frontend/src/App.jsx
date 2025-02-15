@@ -1,12 +1,26 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LetterPopup from "./pages/LetterPopup";
 import SpellingBee from "./pages/Spelling_Bee";
+import { DashBoard } from "./pages/Dashboard";
+import CardFlip from "./pages/CardFlip";
+import Signup from "./pages/Signup";
+import Signin from "./pages/SignIn";
+import LandingPage from "./pages/LandingPage";
+import WordCorrectionGame from "./pages/WordCorrect";
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/spellingbee" element={<SpellingBee/>} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/spellingbee" element={<SpellingBee />} />
         <Route path="/letterpopup" element={<LetterPopup />} />
+        <Route path="/cardflip" element={<CardFlip></CardFlip>}></Route>{" "}
+        <Route
+          path="/wordCorrection"
+          element={<WordCorrectionGame></WordCorrectionGame>}
+        ></Route>
+        <Route path="signup" element={<Signup></Signup>}></Route>
+        <Route path="signin" element={<Signin></Signin>}></Route>
       </Routes>
     </Router>
   );
