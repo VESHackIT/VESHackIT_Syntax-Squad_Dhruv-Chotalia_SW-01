@@ -8,6 +8,7 @@ import Signin from "./pages/SignIn";
 import LandingPage from "./pages/LandingPage";
 import WordCorrectionGame from "./pages/WordCorrect";
 import SpellingSafari from "./pages/Spelling_Safari";
+import RhymeTime from "./pages/Rhymetime";
 function App() {
   return (
     <Router>
@@ -16,6 +17,7 @@ function App() {
         <Route path="/spellingbee" element={<SpellingBee />} />
         <Route path="/letterpopup" element={<LetterPopup />} />
         <Route path="/spellingsafari"element={<SpellingSafari />}/>
+        <Route path="/rhymetime"element={<RhymeTime />}/>
         <Route path="/cardflip" element={<CardFlip></CardFlip>}></Route>{" "}
         <Route
           path="/wordCorrection"
