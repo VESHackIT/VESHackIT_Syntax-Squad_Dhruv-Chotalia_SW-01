@@ -1,5 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Star, Trophy, RefreshCw, AlertTriangle, ArrowRight, Brain } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  Sparkles,
+  Star,
+  Trophy,
+  RefreshCw,
+  AlertTriangle,
+  ArrowRight,
+  Brain,
+} from "lucide-react";
 
 function SpellingSafari() {
   // Expected backend sentence structure:
@@ -7,24 +15,24 @@ function SpellingSafari() {
   const [sentenceData, setSentenceData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // Track user interactions: which word indices were clicked and the feedback ("correct" or "incorrect")
   const [clickedIndices, setClickedIndices] = useState([]);
   const [feedback, setFeedback] = useState({});
   // Score: counts correct selections and incorrect ones (from false positives or missed errors)
   const [score, setScore] = useState({ correct: 0, incorrect: 0 });
-  
+
   // Separate lists for missed errors and false positive selections
   const [missed, setMissed] = useState([]);
   const [incorrectWords, setIncorrectWords] = useState([]);
-  
+
   // Overall user stats (for long-term progression; currently stored locally)
   const [stats, setStats] = useState({ accuracy: 0, currentLevel: 50 });
-  
+
   // Timing state for response speed
   const [startTime, setStartTime] = useState(null);
   const [responseTimes, setResponseTimes] = useState([]);
-  
+
   // States for submission and analysis features
   const [submitted, setSubmitted] = useState(false);
   // analysisFeedback can be either an object with suggestions or an encouraging message object
@@ -36,7 +44,11 @@ function SpellingSafari() {
 
   // Helper function: clean text by removing punctuation, extra spaces, and lowercasing
   const cleanText = (text) => {
-    return text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+    return text
+      .replace(/[^\w\s]|_/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
   };
 
   // Fetch a new sentence from the backend
@@ -44,12 +56,15 @@ function SpellingSafari() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:3000/generate-sentence', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accuracy: stats.accuracy, currentLevel: stats.currentLevel })
+      const response = await fetch("http://localhost:3000/generate-sentence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accuracy: stats.accuracy,
+          currentLevel: stats.currentLevel,
+        }),
       });
-      if (!response.ok) throw new Error('Failed to fetch sentence');
+      if (!response.ok) throw new Error("Failed to fetch sentence");
       const data = await response.json();
       setSentenceData(data);
       // Reset all interactive states for the new sentence
@@ -65,8 +80,8 @@ function SpellingSafari() {
       setMissed([]);
       setIncorrectWords([]);
     } catch (err) {
-      console.error('Error fetching sentence:', err);
-      setError('Error fetching sentence. Please try again.');
+      console.error("Error fetching sentence:", err);
+      setError("Error fetching sentence. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -83,19 +98,21 @@ function SpellingSafari() {
     if (!sentenceData || submitted || clickedIndices.includes(index)) return;
     const currentTime = Date.now();
     const timeTaken = (currentTime - startTime) / 1000;
-    setResponseTimes(prev => [...prev, timeTaken]);
-    setClickedIndices(prev => [...prev, index]);
+    setResponseTimes((prev) => [...prev, timeTaken]);
+    setClickedIndices((prev) => [...prev, index]);
 
     const cleanedWord = cleanText(word);
     // Compare clicked word against backend errors (which are returned as strings)
-    const isError = sentenceData.errors.some(errorStr => cleanText(errorStr) === cleanedWord);
+    const isError = sentenceData.errors.some(
+      (errorStr) => cleanText(errorStr) === cleanedWord,
+    );
 
     if (isError) {
-      setFeedback(prev => ({ ...prev, [index]: 'correct' }));
-      setScore(prev => ({ ...prev, correct: prev.correct + 1 }));
+      setFeedback((prev) => ({ ...prev, [index]: "correct" }));
+      setScore((prev) => ({ ...prev, correct: prev.correct + 1 }));
     } else {
-      setFeedback(prev => ({ ...prev, [index]: 'incorrect' }));
-      setScore(prev => ({ ...prev, incorrect: prev.incorrect + 1 }));
+      setFeedback((prev) => ({ ...prev, [index]: "incorrect" }));
+      setScore((prev) => ({ ...prev, incorrect: prev.incorrect + 1 }));
 
       // Report false positive mistake immediately
       const mistakeData = {
@@ -115,14 +132,18 @@ function SpellingSafari() {
       })
         .then((res) => res.json())
         .then((data) => console.log("False positive mistake recorded:", data))
-        .catch((err) => console.error("Error reporting false positive mistake:", err));
+        .catch((err) =>
+          console.error("Error reporting false positive mistake:", err),
+        );
     }
   };
 
   // Compute sentence accuracy based solely on clicks
   const computeSentenceAccuracy = () => {
     const totalClicks = score.correct + score.incorrect;
-    return totalClicks > 0 ? ((score.correct / totalClicks) * 100).toFixed(2) : '0';
+    return totalClicks > 0
+      ? ((score.correct / totalClicks) * 100).toFixed(2)
+      : "0";
   };
 
   // Handle submission:
@@ -133,22 +154,26 @@ function SpellingSafari() {
     let newMissed = [];
     let newIncorrectWords = [];
     if (sentenceData) {
-      const words = sentenceData.sentence.split(' ');
+      const words = sentenceData.sentence.split(" ");
       // Missed errors: error words that were not clicked.
-      sentenceData.errors.forEach(errorStr => {
+      sentenceData.errors.forEach((errorStr) => {
         const cleanedError = cleanText(errorStr);
         const indices = words
           .map((w, idx) => (cleanText(w) === cleanedError ? idx : null))
-          .filter(idx => idx !== null);
-        if (!indices.some(idx => clickedIndices.includes(idx))) {
+          .filter((idx) => idx !== null);
+        if (!indices.some((idx) => clickedIndices.includes(idx))) {
           newMissed.push(errorStr);
         }
       });
       // False positives: clicked words that are not errors.
-      clickedIndices.forEach(idx => {
+      clickedIndices.forEach((idx) => {
         const word = words[idx];
         const cleanedWord = cleanText(word);
-        if (!sentenceData.errors.some(errorStr => cleanText(errorStr) === cleanedWord)) {
+        if (
+          !sentenceData.errors.some(
+            (errorStr) => cleanText(errorStr) === cleanedWord,
+          )
+        ) {
           newIncorrectWords.push(word);
         }
       });
@@ -194,18 +219,18 @@ function SpellingSafari() {
   const handleNext = () => {
     const sentenceAccuracy = parseFloat(computeSentenceAccuracy());
     let newLevel = stats.currentLevel;
-  
+
     if (sentenceAccuracy >= 80) {
       newLevel = Math.min(100, stats.currentLevel + 5);
     } else if (sentenceAccuracy < 50) {
       newLevel = Math.max(1, stats.currentLevel - 5);
     }
-  
+
     // Update local stats and fetch a new sentence
     setStats({ currentLevel: newLevel, accuracy: sentenceAccuracy });
     fetchSentence();
   };
-  
+
   // Handle Analyze:
   // - If analysis feedback already exists, toggle the analysis panel.
   // - If no mistakes exist (score.incorrect <= 0), display an encouraging message.
@@ -213,7 +238,10 @@ function SpellingSafari() {
   // The list of mistakes now comes from both missed errors and false positives.
   const handleAnalyze = async () => {
     // Toggle analysis if feedback is already available.
-    if (analysisFeedback && (analysisFeedback.message || Object.keys(analysisFeedback).length > 0)) {
+    if (
+      analysisFeedback &&
+      (analysisFeedback.message || Object.keys(analysisFeedback).length > 0)
+    ) {
       setShowAnalysis(!showAnalysis);
       return;
     }
@@ -229,9 +257,10 @@ function SpellingSafari() {
         "Impressive! No errors detected!",
         "You're a spelling champ!",
         "Outstanding! No errors!",
-        "Keep it up! Perfect round!"
+        "Keep it up! Perfect round!",
       ];
-      const randomMessage = encouragements[Math.floor(Math.random() * encouragements.length)];
+      const randomMessage =
+        encouragements[Math.floor(Math.random() * encouragements.length)];
       setAnalysisFeedback({ message: randomMessage });
       setShowAnalysis(true);
       return;
@@ -239,34 +268,38 @@ function SpellingSafari() {
     setAnalyzing(true);
     let mistakes = [];
     if (sentenceData) {
-      const words = sentenceData.sentence.split(' ');
+      const words = sentenceData.sentence.split(" ");
       // Gather missed errors
-      sentenceData.errors.forEach(errorStr => {
+      sentenceData.errors.forEach((errorStr) => {
         const cleanedError = cleanText(errorStr);
         const indices = words
           .map((w, idx) => (cleanText(w) === cleanedError ? idx : null))
-          .filter(idx => idx !== null);
-        if (!indices.some(idx => clickedIndices.includes(idx))) {
+          .filter((idx) => idx !== null);
+        if (!indices.some((idx) => clickedIndices.includes(idx))) {
           mistakes.push(errorStr);
         }
       });
       // Gather false positives: clicked words that are not errors.
-      clickedIndices.forEach(idx => {
+      clickedIndices.forEach((idx) => {
         const word = words[idx];
         const cleanedWord = cleanText(word);
-        if (!sentenceData.errors.some(errorStr => cleanText(errorStr) === cleanedWord)) {
+        if (
+          !sentenceData.errors.some(
+            (errorStr) => cleanText(errorStr) === cleanedWord,
+          )
+        ) {
           mistakes.push(word);
         }
       });
     }
 
     try {
-      const response = await fetch('http://localhost:3000/analyze-mistakes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mistakes })
+      const response = await fetch("http://localhost:3000/analyze-mistakes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mistakes }),
       });
-      if (!response.ok) throw new Error('Analysis request failed');
+      if (!response.ok) throw new Error("Analysis request failed");
       const data = await response.json();
       // data.suggestions is expected to be an object mapping each word to its suggestion.
       setAnalysisFeedback(data.suggestions);
@@ -314,20 +347,22 @@ function SpellingSafari() {
           {/* Main Game Card */}
           <div className="bg-white/90 backdrop-blur-lg p-8 rounded-2xl shadow-xl max-w-2xl w-full transform hover:scale-102 transition-all duration-300 border-2 border-green-200">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-sm text-green-600 font-medium">Find the spelling mistakes!</span>
+              <span className="text-sm text-green-600 font-medium">
+                Find the spelling mistakes!
+              </span>
             </div>
             <div className="p-4 bg-green-50 rounded-xl">
-              {sentenceData.sentence.split(' ').map((word, index) => (
+              {sentenceData.sentence.split(" ").map((word, index) => (
                 <span
                   key={index}
                   onClick={() => handleWordClick(word, index)}
                   className={`cursor-pointer mr-2 inline-block transition-all duration-300 px-2 py-1 rounded-lg ${
-                    feedback[index] === 'correct'
-                      ? 'bg-green-200 text-green-800 transform scale-110'
-                      : feedback[index] === 'incorrect'
-                      ? 'bg-red-200 text-red-800 transform scale-110'
-                      : 'hover:bg-yellow-100'
-                  } ${!submitted && 'hover:scale-110'}`}
+                    feedback[index] === "correct"
+                      ? "bg-green-200 text-green-800 transform scale-110"
+                      : feedback[index] === "incorrect"
+                        ? "bg-red-200 text-red-800 transform scale-110"
+                        : "hover:bg-yellow-100"
+                  } ${!submitted && "hover:scale-110"}`}
                 >
                   {word}
                 </span>
@@ -340,19 +375,27 @@ function SpellingSafari() {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-green-50 rounded-lg">
                 <p className="text-sm text-green-600">Correct</p>
-                <p className="text-2xl font-bold text-green-800">{score.correct}</p>
+                <p className="text-2xl font-bold text-green-800">
+                  {score.correct}
+                </p>
               </div>
               <div className="text-center p-3 bg-red-50 rounded-lg">
                 <p className="text-sm text-red-600">Incorrect</p>
-                <p className="text-2xl font-bold text-red-800">{score.incorrect}</p>
+                <p className="text-2xl font-bold text-red-800">
+                  {score.incorrect}
+                </p>
               </div>
               <div className="text-center p-3 bg-yellow-50 rounded-lg">
                 <p className="text-sm text-yellow-600">Missed</p>
-                <p className="text-2xl font-bold text-yellow-800">{missed.length}</p>
+                <p className="text-2xl font-bold text-yellow-800">
+                  {missed.length}
+                </p>
               </div>
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-600">Accuracy</p>
-                <p className="text-2xl font-bold text-blue-800">{computeSentenceAccuracy()}%</p>
+                <p className="text-2xl font-bold text-blue-800">
+                  {computeSentenceAccuracy()}%
+                </p>
               </div>
             </div>
           </div>
@@ -360,10 +403,14 @@ function SpellingSafari() {
           {/* Panel for Incorrect Selections */}
           {submitted && incorrectWords.length > 0 && (
             <div className="mt-4 bg-orange-50 p-4 rounded-lg shadow w-full max-w-md">
-              <h3 className="text-orange-700 font-bold mb-2">Incorrect Selections</h3>
+              <h3 className="text-orange-700 font-bold mb-2">
+                Incorrect Selections
+              </h3>
               <ul className="list-disc list-inside">
                 {incorrectWords.map((word, idx) => (
-                  <li key={idx} className="text-orange-600">{word}</li>
+                  <li key={idx} className="text-orange-600">
+                    {word}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -418,36 +465,75 @@ function SpellingSafari() {
               </h2>
               <div className="space-y-4">
                 {analysisFeedback.message ? (
-                  <p className="text-lg text-green-700 font-medium">{analysisFeedback.message}</p>
+                  <p className="text-lg text-green-700 font-medium">
+                    {analysisFeedback.message}
+                  </p>
                 ) : (
                   Object.entries(analysisFeedback)
-                    .filter(([word, suggestion]) => suggestion.error_pattern !== "false positive")
+                    .filter(
+                      ([word, suggestion]) =>
+                        suggestion.error_pattern !== "false positive",
+                    )
                     .map(([mistake, suggestion], i) => (
-                      <div key={i} className="p-4 bg-green-50 rounded-lg border-b pb-2">
-                        <p className="text-lg font-medium text-red-600">Missed: {mistake}</p>
-                        <p className="text-lg"><strong>Correct:</strong> {suggestion.corrected_spelling}</p>
-                        <p className="text-lg"><strong>Explanation:</strong> {suggestion.explanation}</p>
-                        <p className="text-lg"><strong>Error Pattern:</strong> {suggestion.error_pattern}</p>
-                        <p className="text-lg"><strong>Suggestion:</strong> {suggestion.suggestion}</p>
+                      <div
+                        key={i}
+                        className="p-4 bg-green-50 rounded-lg border-b pb-2"
+                      >
+                        <p className="text-lg font-medium text-red-600">
+                          Missed: {mistake}
+                        </p>
+                        <p className="text-lg">
+                          <strong>Correct:</strong>{" "}
+                          {suggestion.corrected_spelling}
+                        </p>
+                        <p className="text-lg">
+                          <strong>Explanation:</strong> {suggestion.explanation}
+                        </p>
+                        <p className="text-lg">
+                          <strong>Error Pattern:</strong>{" "}
+                          {suggestion.error_pattern}
+                        </p>
+                        <p className="text-lg">
+                          <strong>Suggestion:</strong> {suggestion.suggestion}
+                        </p>
                       </div>
                     ))
                 )}
-                {Object.entries(analysisFeedback).filter(([word, suggestion]) => suggestion.error_pattern === "false positive").length > 0 && (
+                {Object.entries(analysisFeedback).filter(
+                  ([word, suggestion]) =>
+                    suggestion.error_pattern === "false positive",
+                ).length > 0 && (
                   <div className="border-t pt-4">
-                    <h3 className="text-xl font-bold text-blue-600 mb-2">False Positives</h3>
+                    <h3 className="text-xl font-bold text-blue-600 mb-2">
+                      False Positives
+                    </h3>
                     {Object.entries(analysisFeedback)
-                      .filter(([word, suggestion]) => suggestion.error_pattern === "false positive")
+                      .filter(
+                        ([word, suggestion]) =>
+                          suggestion.error_pattern === "false positive",
+                      )
                       .map(([word, suggestion], i) => (
-                        <div key={i} className="p-4 bg-blue-50 rounded-lg border-b pb-2">
-                          <p className="text-lg font-medium text-blue-800">Word: {word}</p>
-                          <p className="text-lg"><strong>Feedback:</strong> {suggestion.explanation}</p>
-                          <p className="text-lg"><strong>Suggestion:</strong> {suggestion.suggestion}</p>
+                        <div
+                          key={i}
+                          className="p-4 bg-blue-50 rounded-lg border-b pb-2"
+                        >
+                          <p className="text-lg font-medium text-blue-800">
+                            Word: {word}
+                          </p>
+                          <p className="text-lg">
+                            <strong>Feedback:</strong> {suggestion.explanation}
+                          </p>
+                          <p className="text-lg">
+                            <strong>Suggestion:</strong> {suggestion.suggestion}
+                          </p>
                         </div>
                       ))}
                   </div>
                 )}
                 {Object.entries(analysisFeedback).length === 0 && (
-                  <p className="text-lg text-green-700 font-medium">No actionable suggestions. Excellent work!</p>
+                  <p className="text-lg text-green-700 font-medium">
+                    No actionable suggestions. Excellent work!
+                  </p>
                 )}
               </div>
             </div>

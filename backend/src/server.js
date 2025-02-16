@@ -9,6 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use("/api", protect, router);
+
 app.post("/user", createNewUser);
 app.post("/signin", signin);
 app.post("/hi", (req, res) => {

@@ -10,6 +10,7 @@ const SignIn = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    console.log("hellow world");
 
     try {
       const response = await fetch("http://localhost:3000/signin", {
@@ -24,7 +25,7 @@ const SignIn = () => {
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
-
+      console.log("in handleSubmit");
       const data = await response.json();
       console.log("Sign in successful:", data);
       // Store the token in localStorage

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { SignUpModal, SignInModal } from "./Modals";
 import {
   GamepadIcon,
   Brain,
@@ -33,75 +34,6 @@ const LoadingScreen = () => (
     </div>
   </div>
 );
-
-// Sign Up Modal Component
-const SignUpModal = ({ onClose }) => {
-  return (
-    <div className="w-full max-w-md p-8 bg-white shadow-md rounded-lg relative">
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-      >
-        ✕
-      </button>
-      <h2 className="text-2xl font-bold text-center text-purple-600">
-        Sign Up
-      </h2>
-      <form className="mt-4 space-y-3">
-        <input
-          type="text"
-          placeholder="Name"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <button className="w-full p-2 text-white bg-purple-600 rounded-md hover:bg-purple-700">
-          Sign Up
-        </button>
-      </form>
-    </div>
-  );
-};
-
-// Sign In Modal Component
-const SignInModal = ({ onClose }) => {
-  return (
-    <div className="w-full max-w-md p-8 bg-white shadow-md rounded-lg relative">
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-      >
-        ✕
-      </button>
-      <h2 className="text-2xl font-bold text-center text-purple-600">
-        Sign In
-      </h2>
-      <form className="mt-4 space-y-3">
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <button className="w-full p-2 text-white bg-purple-600 rounded-md hover:bg-purple-700">
-          Sign In
-        </button>
-      </form>
-    </div>
-  );
-};
 
 const LandingPage = () => {
   const navigate = useNavigate();

@@ -77,7 +77,6 @@
 
 // // export default App;
 
-
 // import React, { useEffect, useState } from 'react';
 // import { motion } from 'framer-motion';
 // import { Brain } from 'lucide-react';
@@ -197,13 +196,13 @@
 // }
 
 // export default App;
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Brain } from 'lucide-react';
-import WordCard from '../components/components/WordCard';
-import ScoreBoard from '../components/components/ScoreBoard';
-import useGameStore from '../components/components/gameStore';
-import { getDynamicWords } from '../components/components/wordUtils';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Brain } from "lucide-react";
+import WordCard from "../components/components/WordCard";
+import ScoreBoard from "../components/components/ScoreBoard";
+import useGameStore from "../components/components/gameStore";
+import { getDynamicWords } from "../components/components/wordUtils";
 
 function RhymeTime() {
   const {
@@ -231,7 +230,7 @@ function RhymeTime() {
       });
       setError(null);
     } catch (err) {
-      setError('Failed to load words. Please try again.');
+      setError("Failed to load words. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -269,9 +268,7 @@ function RhymeTime() {
       })
         .then((res) => res.json())
         .then((data) => console.log("Mistake recorded:", data))
-        .catch((error) =>
-          console.error("Error reporting mistake:", error)
-        );
+        .catch((error) => console.error("Error reporting mistake:", error));
 
       // Reset the feedback after a short delay.
       setTimeout(() => {
@@ -345,4 +342,3 @@ function RhymeTime() {
 }
 
 export default RhymeTime;
-

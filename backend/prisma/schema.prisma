@@ -9,16 +9,19 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String    @id @default(uuid())
+  username  String    @unique
+  password  String
   name      String?
-  email     String?  @unique
-  createdAt DateTime @default(now())
-  mistakes  Mistake[]
+  email     String?
+  createdAt DateTime  @default(now())
+  mistakes  Mistake[] // One-to-many relation
 }
 
 model Mistake {
-  id              String  @id @default(uuid())
-  userId          String
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id]) // Foreign key
   gameType        String
   incorrectLetter String
   correctLetter   String

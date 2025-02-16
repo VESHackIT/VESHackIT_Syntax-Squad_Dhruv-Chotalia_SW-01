@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Trophy, Heart, RotateCcw, ChevronRight } from "lucide-react";
 
 const gameData = [
   {
@@ -48,6 +49,8 @@ const WordCorrectionGame = () => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [draggedLetter, setDraggedLetter] = useState(null);
+  const [lives, setLives] = useState(3);
+  const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {
     resetWord();
@@ -63,7 +66,7 @@ const WordCorrectionGame = () => {
   };
 
   const handleDrop = (targetIndex) => {
-    if (!draggedLetter) return;
+    if (!draggedLetter || lives <= 0) return;
     const wordData = gameData[currentWordIndex];
 
     if (!wordData.incorrectPositions.includes(targetIndex)) {
@@ -73,39 +76,23 @@ const WordCorrectionGame = () => {
 
     const correctLetter = wordData.correctWord[targetIndex];
 
-    // Report a mistake if the dragged letter is not the correct one
+    // Handle incorrect attempt
     if (draggedLetter !== correctLetter) {
-      const mistakeData = {
-        userId: "12345", // Replace with actual user ID if available
-        gameType: "Word Correction",
-        mistake: {
-          incorrect: draggedLetter,
-          correct: correctLetter,
-        },
-        word: wordData.correctWord,
-      };
-
-      fetch("http://localhost:3000/api/mistake", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(mistakeData),
-      })
-        .then((res) => res.json())
-        .then((data) => console.log("Mistake recorded:", data))
-        .catch((error) =>
-          console.error("Error reporting mistake:", error)
-        );
+      setLives((prev) => {
+        const newLives = prev - 1;
+        if (newLives <= 0) {
+          setGameOver(true);
+          setMessage("Game Over! Click Reset to try again.");
+        }
+        return newLives;
+      });
     }
 
-    // Swap the letters instead of removing the dragged letter
     const newWord = [...currentWord];
     const replacedLetter = newWord[targetIndex];
     newWord[targetIndex] = draggedLetter;
     setCurrentWord(newWord);
 
-    // Update available letters by replacing the dragged letter with the letter that was in the tile
     const newAvailableLetters = availableLetters.slice();
     const draggedIndex = newAvailableLetters.indexOf(draggedLetter);
     if (draggedIndex !== -1) {
@@ -118,100 +105,138 @@ const WordCorrectionGame = () => {
     setDraggedLetter(null);
     setAttempts((prev) => prev + 1);
 
-    // Check if the new word matches the correct word
     if (newWord.join("") === wordData.correctWord) {
       const pointsEarned = Math.max(10 - attempts, 1);
       setScore((prev) => prev + pointsEarned);
-      setMessage(
-        `Correct! You earned ${pointsEarned} points. Click Next to continue.`
-      );
+      setMessage(`Correct! +${pointsEarned} points`);
       setIsCorrect(true);
     }
   };
 
   const handleNext = () => {
     if (!isCorrect) {
-      setMessage("Fix all incorrect letters before moving on!");
+      setMessage("Fix all incorrect letters first!");
       return;
     }
     if (currentWordIndex < gameData.length - 1) {
       setCurrentWordIndex((prev) => prev + 1);
     } else {
-      setMessage(`Game completed! Final score: ${score}`);
+      setGameOver(true);
+      setMessage(`Congratulations! Final score: ${score}`);
     }
   };
 
-  return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-2">Word Correction Game</h2>
-        <p className="text-lg">Score: {score}</p>
-        <p className="text-sm text-gray-600 mt-1">
-          Attempts this word: {attempts}
-        </p>
-      </div>
+  const resetGame = () => {
+    setCurrentWordIndex(0);
+    setScore(0);
+    setLives(3);
+    setGameOver(false);
+    setMessage("");
+    resetWord();
+  };
 
-      <div className="flex flex-col items-center gap-8">
-        <div className="flex gap-2">
-          {currentWord.map((letter, index) => {
-            const wordData = gameData[currentWordIndex];
-            const correctLetter = wordData.correctWord[index];
-            const isCurrentCorrect = letter === correctLetter;
-            const isInitiallyIncorrect =
-              wordData.incorrectPositions.includes(index);
-            return (
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 py-8 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-xl p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-blue-800 mb-2">
+            Word Correction Game
+          </h1>
+          <div className="flex justify-center items-center gap-8 mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-yellow-500" />
+              <span className="text-xl font-semibold">{score}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {[...Array(3)].map((_, i) => (
+                <Heart
+                  key={i}
+                  className={`w-6 h-6 ${i < lives ? "text-red-500" : "text-gray-300"}`}
+                  fill={i < lives ? "currentColor" : "none"}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="text-sm text-gray-600">
+            Word {currentWordIndex + 1} of {gameData.length}
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-8">
+          <div className="flex flex-wrap justify-center gap-3">
+            {currentWord.map((letter, index) => {
+              const wordData = gameData[currentWordIndex];
+              const isCurrentCorrect = letter === wordData.correctWord[index];
+              const isInitiallyIncorrect =
+                wordData.incorrectPositions.includes(index);
+              return (
+                <div
+                  key={index}
+                  className={`w-14 h-14 border-2 flex items-center justify-center text-2xl font-bold rounded-lg transition-all duration-200 ${
+                    isCurrentCorrect
+                      ? "border-green-500 bg-green-50 text-green-700"
+                      : isInitiallyIncorrect
+                        ? "border-red-400 bg-red-50 text-red-700 shadow-md hover:shadow-lg"
+                        : "border-gray-300 bg-gray-50 text-gray-700"
+                  }`}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDrop(index)}
+                >
+                  {letter}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex gap-3 flex-wrap justify-center">
+            {availableLetters.map((letter, index) => (
               <div
                 key={index}
-                className={`w-12 h-12 border-2 flex items-center justify-center text-2xl rounded-lg ${
-                  isCurrentCorrect
-                    ? "border-green-500 bg-green-50"
-                    : isInitiallyIncorrect
-                    ? "border-red-500 bg-red-50"
-                    : "border-gray-300"
-                }`}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDrop(index)}
+                className={`w-14 h-14 text-2xl font-bold bg-blue-600 text-white rounded-lg flex items-center justify-center cursor-move 
+                  transform hover:scale-105 transition-transform duration-150 shadow-md
+                  ${gameOver ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"}`}
+                draggable={!gameOver}
+                onDragStart={() => setDraggedLetter(letter)}
               >
                 {letter}
               </div>
-            );
-          })}
-        </div>
-
-        <div className="flex gap-4 flex-wrap justify-center">
-          {availableLetters.map((letter, index) => (
-            <div
-              key={index}
-              className="w-12 h-12 text-2xl bg-blue-500 text-white rounded-lg flex items-center justify-center cursor-move"
-              draggable
-              onDragStart={() => setDraggedLetter(letter)}
-            >
-              {letter}
-            </div>
-          ))}
-        </div>
-
-        {message && (
-          <div
-            className={`text-xl font-bold ${
-              message.includes("Correct") || message.includes("completed")
-                ? "text-green-500"
-                : "text-red-500"
-            }`}
-          >
-            {message}
+            ))}
           </div>
-        )}
 
-        <button
-          onClick={handleNext}
-          className={`px-6 py-2 bg-blue-500 text-white rounded-lg ${
-            !isCorrect && "opacity-50 cursor-not-allowed"
-          }`}
-          disabled={!isCorrect}
-        >
-          Next Word
-        </button>
+          {message && (
+            <div
+              className={`text-xl font-bold px-6 py-3 rounded-lg ${
+                message.includes("Correct") ||
+                message.includes("Congratulations")
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {message}
+            </div>
+          )}
+
+          <div className="flex gap-4">
+            <button
+              onClick={resetGame}
+              className="px-6 py-3 bg-gray-600 text-white rounded-lg flex items-center gap-2 hover:bg-gray-700 transition-colors"
+            >
+              <RotateCcw className="w-5 h-5" /> Reset
+            </button>
+            <button
+              onClick={handleNext}
+              className={`px-6 py-3 rounded-lg flex items-center gap-2 transition-colors
+                ${
+                  isCorrect && !gameOver
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                }`}
+              disabled={!isCorrect || gameOver}
+            >
+              Next <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
