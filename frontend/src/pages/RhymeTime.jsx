@@ -1,303 +1,102 @@
-// // import React, { useEffect } from 'react';
-// // import { motion } from 'framer-motion';
-// // import { Brain } from 'lucide-react';
-// // import WordCard from './components/WordCard';
-// // import ScoreBoard from './components/ScoreBoard';
-// // import useGameStore from './store/gameStore';
-// // import { getRandomWords } from './utils/wordUtils';
-
-// // function App() {
-// //   const { score, currentLevel, targetWord, options, isCorrect, incrementScore, setGameState } = useGameStore();
-
-// //   const handleWordSelect = (selectedWord) => {
-// //     const correct = selectedWord.endsWith(targetWord.text.slice(-2));
-// //     setGameState({ isCorrect: correct });
-
-// //     if (correct) {
-// //       incrementScore();
-// //       setTimeout(() => {
-// //         const newTarget = getRandomWords(1)[0];
-// //         const newOptions = getRandomWords(4);
-// //         setGameState({
-// //           targetWord: newTarget,
-// //           options: newOptions,
-// //           isCorrect: null,
-// //           currentLevel: Math.floor(score / 5) + 1,
-// //         });
-// //       }, 1000);
-// //     }
-// //   };
-
-// //   useEffect(() => {
-// //     // Initialize game
-// //     const newTarget = getRandomWords(1)[0];
-// //     const newOptions = getRandomWords(4);
-// //     setGameState({ targetWord: newTarget, options: newOptions });
-// //   }, []);
-
-// //   return (
-// //     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-blue-100 p-8">
-// //       <div className="max-w-4xl mx-auto">
-// //         <motion.div
-// //           initial={{ y: -20, opacity: 0 }}
-// //           animate={{ y: 0, opacity: 1 }}
-// //           className="text-center mb-8"
-// //         >
-// //           <div className="flex items-center justify-center gap-2 mb-4">
-// //             <Brain className="w-8 h-8 text-purple-600" />
-// //             <h1 className="text-4xl font-bold text-purple-600">Rhyme Time</h1>
-// //           </div>
-// //           <p className="text-gray-600">Find the word that rhymes with the target!</p>
-// //         </motion.div>
-
-// //         <ScoreBoard score={score} level={currentLevel} />
-
-// //         <div className="mt-8">
-// //           <WordCard word={targetWord.text} isTarget={true} />
-// //         </div>
-
-// //         <motion.div
-// //           className="mt-8 grid grid-cols-2 gap-4"
-// //           initial={{ y: 20, opacity: 0 }}
-// //           animate={{ y: 0, opacity: 1 }}
-// //         >
-// //           {options.map((option, index) => (
-// //             <WordCard
-// //               key={index}
-// //               word={option.text}
-// //               onClick={() => handleWordSelect(option.text)}
-// //               isCorrect={isCorrect}
-// //             />
-// //           ))}
-// //         </motion.div>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // export default App;
-
-// import React, { useEffect, useState } from 'react';
-// import { motion } from 'framer-motion';
-// import { Brain } from 'lucide-react';
-// import WordCard from './components/WordCard';
-// import ScoreBoard from './components/ScoreBoard';
-// import useGameStore from './store/gameStore';
-// import { getDynamicWords } from './utils/wordUtils';
-
-// function App() {
-//   const {
-//     score,
-//     currentLevel,
-//     targetWord,
-//     options,
-//     isCorrect,
-//     incrementScore,
-//     setGameState,
-//   } = useGameStore();
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-
-//   // Fetch dynamic words based on the current difficulty level
-//   const fetchWords = async (level) => {
-//     setLoading(true);
-//     try {
-//       const { target, options } = await getDynamicWords(level);
-//       setGameState({
-//         targetWord: target,
-//         options: options,
-//         isCorrect: null,
-//         currentLevel: level,
-//       });
-//     } catch (err) {
-//       setError('Failed to load words. Please try again.');
-//       console.error(err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleWordSelect = (selectedWord) => {
-//     // Check if the selected word rhymes with the target (example logic)
-//     const correct = selectedWord.endsWith(targetWord.text.slice(-2));
-//     setGameState({ isCorrect: correct });
-
-//     if (correct) {
-//       incrementScore();
-//       setTimeout(() => {
-//         // Update level every 5 points; adjust as needed
-//         const newLevel = Math.floor((score + 1) / 5) + 1;
-//         fetchWords(newLevel);
-//       }, 1000);
-//     }
-//   };
-
-//   useEffect(() => {
-//     // Initialize game with dynamic words based on the current level
-//     fetchWords(currentLevel);
-//   }, []);
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen flex justify-center items-center">
-//         <p className="text-xl">Loading...</p>
-//       </div>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <div className="min-h-screen flex justify-center items-center">
-//         <p className="text-xl text-red-600">{error}</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-blue-100 p-8">
-//       <div className="max-w-4xl mx-auto">
-//         <motion.div
-//           initial={{ y: -20, opacity: 0 }}
-//           animate={{ y: 0, opacity: 1 }}
-//           className="text-center mb-8"
-//         >
-//           <div className="flex items-center justify-center gap-2 mb-4">
-//             <Brain className="w-8 h-8 text-purple-600" />
-//             <h1 className="text-4xl font-bold text-purple-600">Rhyme Time</h1>
-//           </div>
-//           <p className="text-gray-600">
-//             Find the word that rhymes with the target!
-//           </p>
-//         </motion.div>
-
-//         <ScoreBoard score={score} level={currentLevel} />
-
-//         <div className="mt-8">
-//           <WordCard word={targetWord.text} isTarget={true} />
-//         </div>
-
-//         <motion.div
-//           className="mt-8 grid grid-cols-2 gap-4"
-//           initial={{ y: 20, opacity: 0 }}
-//           animate={{ y: 0, opacity: 1 }}
-//         >
-//           {options.map((option, index) => (
-//             <WordCard
-//               key={index}
-//               word={option.text}
-//               onClick={() => handleWordSelect(option.text)}
-//               isCorrect={isCorrect}
-//             />
-//           ))}
-//         </motion.div>
-//       </div>
-//     </div>
-//   );
-// }
-
 // export default App;
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Brain } from "lucide-react";
-import WordCard from "../components/components/WordCard";
 import ScoreBoard from "../components/components/ScoreBoard";
 import useGameStore from "../components/components/gameStore";
-import { getDynamicWords } from "../components/components/wordUtils";
+
+const wordData = [
+  {
+    target: "cat",
+    options: ["bat", "dog", "mat", "pen"],
+    correctOption: "bat",
+  },
+  {
+    target: "tree",
+    options: ["bee", "rock", "free", "sun"],
+    correctOption: "free",
+  },
+  {
+    target: "star",
+    options: ["car", "moon", "far", "book"],
+    correctOption: "far",
+  },
+  {
+    target: "light",
+    options: ["night", "dark", "right", "door"],
+    correctOption: "night",
+  },
+  {
+    target: "play",
+    options: ["stay", "run", "way", "table"],
+    correctOption: "stay",
+  },
+  {
+    target: "blue",
+    options: ["clue", "red", "shoe", "green"],
+    correctOption: "clue",
+  },
+  {
+    target: "fun",
+    options: ["run", "sleep", "sun", "laugh"],
+    correctOption: "run",
+  },
+  {
+    target: "hill",
+    options: ["chill", "tall", "pill", "ball"],
+    correctOption: "chill",
+  },
+];
 
 function RhymeTime() {
-  const {
-    score,
-    currentLevel,
-    targetWord,
-    options,
-    isCorrect,
-    incrementScore,
-    setGameState,
-  } = useGameStore();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { score, incrementScore, setGameState } = useGameStore();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedWord, setSelectedWord] = useState(null);
+  const [isCorrect, setIsCorrect] = useState(null);
 
-  // Fetch dynamic words using Gemini's API based on the current difficulty level.
-  const fetchWords = async (level) => {
-    setLoading(true);
-    try {
-      const { target, options } = await getDynamicWords(level);
-      setGameState({
-        targetWord: target,
-        options: options,
-        isCorrect: null,
-        currentLevel: level,
-      });
-      setError(null);
-    } catch (err) {
-      setError("Failed to load words. Please try again.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    setGameState({
+      targetWord: wordData[currentIndex].target,
+      options: wordData[currentIndex].options,
+      isCorrect: null,
+    });
+    setSelectedWord(null);
+  }, [currentIndex]);
 
-  // Handle word selection and update game state
-  const handleWordSelect = (selectedWord) => {
-    // Check if the selected word rhymes with the target based on the ending letters.
-    const correct = selectedWord.endsWith(targetWord.text.slice(-2));
-    setGameState({ isCorrect: correct });
+  const handleWordSelect = (selected) => {
+    setSelectedWord(selected);
+    const correct = selected === wordData[currentIndex].correctOption;
+    setIsCorrect(correct);
 
     if (correct) {
       incrementScore();
-      setTimeout(() => {
-        const newLevel = Math.floor((score + 1) / 5) + 1;
-        fetchWords(newLevel);
-      }, 1000);
-    } else {
-      // Report the mistake to the backend using the mistake dictionary structure.
-      const mistakeData = {
-        userId: "12345", // Replace with actual user ID if available.
-        gameType: "Rhyme Time",
-        mistake: {
-          incorrect: selectedWord,
-          correct: targetWord.text,
-        },
-        word: targetWord.text,
-      };
-
-      fetch("http://localhost:3000/api/mistake", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mistakeData),
-      })
-        .then((res) => res.json())
-        .then((data) => console.log("Mistake recorded:", data))
-        .catch((error) => console.error("Error reporting mistake:", error));
-
-      // Reset the feedback after a short delay.
-      setTimeout(() => {
-        setGameState({ isCorrect: null });
-      }, 1000);
     }
   };
 
-  useEffect(() => {
-    // Initialize game with words from the API based on current level.
-    fetchWords(currentLevel);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const TargetWord = ({ word }) => (
+    <div className="p-4 rounded-lg border-2 border-purple-500 bg-purple-100 text-center">
+      <h2 className="text-2xl font-bold text-purple-600">{word}</h2>
+    </div>
+  );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <p className="text-xl">Loading...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <p className="text-xl text-red-600">{error}</p>
-      </div>
-    );
-  }
+  const OptionWord = ({ word, isSelected, isCorrect, onClick }) => (
+    <div
+      onClick={onClick}
+      className={`
+        p-4 rounded-lg border-2 text-center cursor-pointer
+        transition-all duration-200
+        ${
+          isSelected
+            ? isCorrect === "correct"
+              ? "bg-green-100 border-green-500"
+              : "bg-red-100 border-red-500"
+            : "bg-white border-gray-200 hover:border-blue-500 hover:shadow-md"
+        }
+      `}
+    >
+      <h2 className="text-2xl font-bold text-gray-700">{word}</h2>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-blue-100 p-8">
@@ -316,10 +115,10 @@ function RhymeTime() {
           </p>
         </motion.div>
 
-        <ScoreBoard score={score} level={currentLevel} />
+        <ScoreBoard score={score} level={currentIndex + 1} />
 
         <div className="mt-8">
-          <WordCard word={targetWord.text} isTarget={true} />
+          <TargetWord word={wordData[currentIndex].target} />
         </div>
 
         <motion.div
@@ -327,15 +126,35 @@ function RhymeTime() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
-          {options.map((option, index) => (
-            <WordCard
+          {wordData[currentIndex].options.map((option, index) => (
+            <OptionWord
               key={index}
-              word={option.text}
-              onClick={() => handleWordSelect(option.text)}
-              isCorrect={isCorrect}
+              word={option}
+              onClick={() => handleWordSelect(option)}
+              isSelected={selectedWord === option}
+              isCorrect={
+                selectedWord === option
+                  ? isCorrect
+                    ? "correct"
+                    : "wrong"
+                  : null
+              }
             />
           ))}
         </motion.div>
+
+        {isCorrect !== null && (
+          <div className="flex justify-center mt-6">
+            <button
+              className="px-6 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600"
+              onClick={() =>
+                setCurrentIndex((prev) => (prev + 1) % wordData.length)
+              }
+            >
+              Next Question
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ function App() {
         <Route path="/rhymetime" element={<RhymeTime />} />
         <Route path="/cardflip" element={<CardFlip></CardFlip>}></Route>{" "}
         <Route
-          path="/wordCorrection"
+          path="/wordcorrect"
           element={<WordCorrectionGame></WordCorrectionGame>}
         ></Route>
         <Route path="signup" element={<Signup></Signup>}></Route>
